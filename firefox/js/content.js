@@ -1,7 +1,7 @@
 const taimuRipu = async () => {
   await new Promise((resolve, _reject) => {
     const videoContainer = document.getElementById("movie_player");
-
+	var repeated = 0;
     const setTimeoutHandler = () => {
       const isAd = videoContainer?.classList.contains("ad-interrupting") || videoContainer?.classList.contains("ad-showing");
       const skipLock = document.querySelector(".ytp-ad-preview-text")?.innerText;
@@ -37,11 +37,12 @@ const taimuRipu = async () => {
       staticAds.forEach((ad) => {
           document.hideElementsBySelector(ad);
       });
-	  
+	  repeated++;
+	  if(repeated==10)
+		  clearInterval(myShit);
       resolve();
     };
 	
-    // RUN IT ONLY AFTER 100 MILLISECONDS
     var myShit = setInterval(setTimeoutHandler, 25);
 	
   });
