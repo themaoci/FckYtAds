@@ -25,6 +25,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 const taimuRipu = async () => {
   await new Promise((resolve, _reject) => {
     const videoContainer = document.getElementById("movie_player");
+	var repeated = 0;
 
     const setTimeoutHandler = () => {
       const isAd = videoContainer?.classList.contains("ad-interrupting") || videoContainer?.classList.contains("ad-showing");
@@ -37,25 +38,33 @@ const taimuRipu = async () => {
         videoPlayer.currentTime = videoPlayer.duration - 0.1;
         videoPlayer.paused && videoPlayer.play()
         // CLICK ON THE SKIP AD BTN
-        document.querySelector(".ytp-ad-skip-button")?.click();
-        document.querySelector(".ytp-ad-skip-button-modern")?.click();
+		setTimeout(() => {
+			document.querySelector(".ytp-ad-skip-button")?.click();
+			document.querySelector(".ytp-ad-skip-button-modern")?.click();
+		}, 50);
+        clearInterval(myShit);
       } else if (isAd && surveyLock) {
         // CLICK ON THE SKIP SURVEY BTN
         document.querySelector(".ytp-ad-skip-button")?.click();
         document.querySelector(".ytp-ad-skip-button-modern")?.click();
-      }
-
+        clearInterval(myShit);
+     }
+	 
+	  repeated++;
+	  if(repeated==10)
+		  clearInterval(myShit);
       resolve();
     };
 
-    // RUN IT ONLY AFTER 100 MILLISECONDS
-    setTimeout(setTimeoutHandler, 100);
+    var myShit = setInterval(setTimeoutHandler, 25);
   });
 
   taimuRipu();
 };
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+	console.log("changeInfo.status");
+	console.log(changeInfo.status);
   if (
     changeInfo.status === "complete" &&
     String(tab.url).includes("https://www.youtube.com/watch")
