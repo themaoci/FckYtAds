@@ -1,63 +1,75 @@
-const taimuRipu = async () => {
-  await new Promise((resolve, _reject) => {
-    const videoContainer = document.getElementById("movie_player");
-	var repeated = 0;
-    const setTimeoutHandler = () => {
-      const isAd = videoContainer?.classList.contains("ad-interrupting") || videoContainer?.classList.contains("ad-showing");
-      const skipLock = document.querySelector(".ytp-ad-preview-text")?.innerText;
-      const surveyLock = document.querySelector(".ytp-ad-survey")?.length > 0;
-
-      if (isAd && skipLock) {
-        const videoPlayer = document.getElementsByClassName("video-stream")[0];
-        videoPlayer.muted = true; // videoPlayer.volume = 0;
-        videoPlayer.currentTime = videoPlayer.duration - 0.1;
-        videoPlayer.paused && videoPlayer.play()
-        // CLICK ON THE SKIP AD BTN
-		setTimeout(() => {
-			document.querySelector(".ytp-ad-skip-button")?.click();
-			document.querySelector(".ytp-ad-skip-button-modern")?.click();
-		}, 50);
-        clearInterval(myShit);
-      } else if (isAd && surveyLock) {
-        // CLICK ON THE SKIP SURVEY BTN
-        document.querySelector(".ytp-ad-skip-button")?.click();
-        document.querySelector(".ytp-ad-skip-button-modern")?.click();
-		clearInterval(myShit);
-      }
-
-      const staticAds = [".ytd-companion-slot-renderer", ".ytd-action-companion-ad-renderer", // in-feed video ads
-                           ".ytd-watch-next-secondary-results-renderer.sparkles-light-cta", ".ytd-unlimited-offer-module-renderer", // similar components
-                           ".ytp-ad-overlay-image", ".ytp-ad-text-overlay", // deprecated overlay ads (04-06-2023)
-                           "div#root.style-scope.ytd-display-ad-renderer.yt-simple-endpoint", "div#sparkles-container.style-scope.ytd-promoted-sparkles-web-renderer",
-                           ".ytd-display-ad-renderer", ".ytd-statement-banner-renderer", ".ytd-in-feed-ad-layout-renderer", // homepage ads
-                           "div#player-ads.style-scope.ytd-watch-flexy, div#panels.style-scope.ytd-watch-flexy", // sponsors
-                           ".ytd-banner-promo-renderer", ".ytd-video-masthead-ad-v3-renderer", ".ytd-primetime-promo-renderer" // subscribe for premium & youtube tv ads
-                          ];
-
-      staticAds.forEach((ad) => {
-          document.hideElementsBySelector(ad);
-      });
-	  repeated++;
-	  if(repeated==10)
-		  clearInterval(myShit);
-      resolve();
-    };
-	
-    var myShit = setInterval(setTimeoutHandler, 25);
-	
-  });
-
-  taimuRipu();
-};
-
-
 const init = async () => {
-  Document.prototype.hideElementsBySelector = (selector) =>
+  console.log("INITIALIZATION");
+  const hideElementsBySelector = (selector) => {
     [...document.querySelectorAll(selector)].forEach(
       (el) => (el.style.display = "none")
     );
+  }
+  document.hideElementsBySelector = hideElementsBySelector;
+    
+  var fad_videoContainer = null;
+  var fad_videoPlayer = null;
+  var fad_isAd = false;
+  var fad_skipLock = false;
+  var fad_surveyLock = false;
 
-    taimuRipu();
+  const updateVideoContainer = async () => {
+    fad_videoContainer = document.getElementById("movie_player");
+    fad_videoPlayer = document.getElementsByClassName("video-stream")[0];
+  }
+  const updateIsAd = async () => {
+    fad_isAd = fad_videoContainer?.classList.contains("ad-interrupting") || fad_videoContainer?.classList.contains("ad-showing");
+  }
+  const updateSkipLock = async () => {
+    fad_skipLock = document.querySelector(".ytp-ad-preview-text")?.innerText;
+  }
+  const updateSurveyLock = async () => {
+    fad_surveyLock = document.querySelector(".ytp-ad-survey")?.length > 0;
+  }
+  const staticAds = [
+    ".ytd-companion-slot-renderer", ".ytd-action-companion-ad-renderer", // in-feed video ads
+    ".ytd-watch-next-secondary-results-renderer.sparkles-light-cta", ".ytd-unlimited-offer-module-renderer", // similar components
+    ".ytp-ad-overlay-image", ".ytp-ad-text-overlay", // deprecated overlay ads (04-06-2023)
+    "div#root.style-scope.ytd-display-ad-renderer.yt-simple-endpoint", "div#sparkles-container.style-scope.ytd-promoted-sparkles-web-renderer",
+    ".ytd-display-ad-renderer", ".ytd-statement-banner-renderer", ".ytd-in-feed-ad-layout-renderer", // homepage ads
+    "div#player-ads.style-scope.ytd-watch-flexy, div#panels.style-scope.ytd-watch-flexy", // sponsors
+    ".ytd-banner-promo-renderer", ".ytd-video-masthead-ad-v3-renderer", ".ytd-primetime-promo-renderer" // subscribe for premium & youtube tv ads
+  ];
+  const removeStaticAds = async () => {
+    staticAds.forEach((ad) => {
+        document.hideElementsBySelector(ad);
+    });
+  }
+  const runDetections = async () => {
+    if (fad_isAd || fad_skipLock) {
+      if(typeof(fad_videoContainer) == "undefined") return;
+      if(typeof(fad_videoPlayer) == "undefined") return;
+      if(typeof(fad_videoPlayer.duration) == "undefined") return;
+      if(typeof(fad_videoPlayer.currentTime) == "undefined") return;
+      console.log("!!Found Video Ad!!");
+      fad_videoPlayer.muted = true; // videoPlayer.volume = 0;
+      fad_videoPlayer.currentTime = fad_videoPlayer.duration - 0.1;
+      fad_videoPlayer.paused && fad_videoPlayer.play();
+      // CLICK ON THE SKIP AD BTN
+      await new Promise(resolve => setTimeout(resolve, 50));
+      document.querySelector(".ytp-ad-skip-button")?.click();
+      document.querySelector(".ytp-ad-skip-button-modern")?.click();
+    } else {
+      if (fad_isAd && fad_surveyLock) {
+        console.log("!!Found Clickable Ad!!");
+        // CLICK ON THE SKIP SURVEY BTN
+        document.querySelector(".ytp-ad-skip-button")?.click();
+        document.querySelector(".ytp-ad-skip-button-modern")?.click();
+      }
+    }
+  }
+
+  setInterval(updateVideoContainer, 50);
+  setInterval(updateIsAd, 50);
+  setInterval(updateSkipLock, 50);
+  setInterval(updateSurveyLock, 50);
+  setInterval(removeStaticAds, 500);
+  setInterval(runDetections, 50);
 };
 
 init();
