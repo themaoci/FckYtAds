@@ -2,7 +2,8 @@ OLD: [FadBlock: Friendly Adblock for Youtube™](https://github.com/0x48piraj/fa
 
 NEW: 
 - updated so it auto clicks on buttons properly
-- decreased timer to wait to 25ms and make it interval instead of timeout
-- added fallback after 10 retries
+- Instantly skips all adds (may even look like your browser lags out thats how fast it skips them)
+- optimized and split accordingly to different interval scripts
+- on found ad block next execution for 500ms
 
-safari not updated (yet... im too lazy)
+safari removed fuck safari, anyone uses operaGX anyway

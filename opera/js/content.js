@@ -12,7 +12,7 @@ const init = async () => {
   var fad_isAd = false;
   var fad_skipLock = false;
   var fad_surveyLock = false;
-
+  var fad_ExecutedAdSkipper = false;
   const updateVideoContainer = async () => {
     fad_videoContainer = document.getElementById("movie_player");
     fad_videoPlayer = document.getElementsByClassName("video-stream")[0];
@@ -41,27 +41,46 @@ const init = async () => {
     });
   }
   const runDetections = async () => {
+    if (fad_ExecutedAdSkipper) return;
     if (fad_isAd || fad_skipLock) {
+
       if(typeof(fad_videoContainer) == "undefined") return;
       if(typeof(fad_videoPlayer) == "undefined") return;
       if(typeof(fad_videoPlayer.duration) == "undefined") return;
       if(typeof(fad_videoPlayer.currentTime) == "undefined") return;
-      console.log("!!Found Video Ad!!");
+
+      fad_ExecutedAdSkipper = true;
       fad_videoPlayer.muted = true; // videoPlayer.volume = 0;
-      fad_videoPlayer.currentTime = fad_videoPlayer.duration - 0.1;
+      try { // sometimes its throwing error here
+        if (fad_videoPlayer.currentTime < fad_videoPlayer.duration - 0.1) 
+        {
+          fad_videoPlayer.currentTime = fad_videoPlayer.duration - 0.1;
+        }
+      } catch{}
       fad_videoPlayer.paused && fad_videoPlayer.play();
       // CLICK ON THE SKIP AD BTN
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 50)); // delay the click to always hit it!!
       document.querySelector(".ytp-ad-skip-button")?.click();
       document.querySelector(".ytp-ad-skip-button-modern")?.click();
-    } else {
-      if (fad_isAd && fad_surveyLock) {
-        console.log("!!Found Clickable Ad!!");
-        // CLICK ON THE SKIP SURVEY BTN
-        document.querySelector(".ytp-ad-skip-button")?.click();
-        document.querySelector(".ytp-ad-skip-button-modern")?.click();
-      }
-    }
+      await new Promise(resolve => setTimeout(() => 
+      { 
+        fad_ExecutedAdSkipper = false; 
+        resolve(); 
+      }, 500)); // delay next execution
+    } 
+    // else {
+    //   if (fad_isAd && fad_surveyLock) {
+    //     fad_ExecutedAdSkipper = true;
+    //     // CLICK ON THE SKIP SURVEY BTN
+    //     document.querySelector(".ytp-ad-skip-button")?.click();
+    //     document.querySelector(".ytp-ad-skip-button-modern")?.click();
+    //     await new Promise(resolve => setTimeout(() => 
+    //     { 
+    //       fad_ExecutedAdSkipper = false; 
+    //       resolve(); 
+    //     }, 500)); // delay next execution
+    //  }
+    // }
   }
 
   setInterval(updateVideoContainer, 50);
