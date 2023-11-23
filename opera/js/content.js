@@ -46,6 +46,7 @@ const init = async () => {
 
       if(typeof(fad_videoContainer) == "undefined") return;
       if(typeof(fad_videoPlayer) == "undefined") return;
+      if(fad_videoPlayer.readyState !== 4) return;
       if(typeof(fad_videoPlayer.duration) == "undefined") return;
       if(typeof(fad_videoPlayer.currentTime) == "undefined") return;
 
@@ -83,12 +84,12 @@ const init = async () => {
     // }
   }
 
-  setInterval(updateVideoContainer, 50);
-  setInterval(updateIsAd, 50);
-  setInterval(updateSkipLock, 50);
-  setInterval(updateSurveyLock, 50);
+  setInterval(updateVideoContainer, 20);
+  setInterval(updateIsAd, 20);
+  setInterval(updateSkipLock, 20);
+  setInterval(updateSurveyLock, 20);
   setInterval(removeStaticAds, 500);
-  setInterval(runDetections, 50);
+  setInterval(runDetections, 25);
 };
 
 init();
